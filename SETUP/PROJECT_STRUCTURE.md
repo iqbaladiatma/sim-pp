@@ -5,32 +5,24 @@
 ```
 sim-pp/
 ├── 📁 app/
+│   ├── 📁 Actions/ (Jetstream/Fortify Actions)
 │   ├── 📁 Console/
-│   │   └── Kernel.php
-│   ├── 📁 Exceptions/
-│   │   └── Handler.php
 │   ├── 📁 Http/
 │   │   ├── 📁 Controllers/
-│   │   │   ├── 📁 SuperAdmin/
-│   │   │   │   ├── DashboardController.php
-│   │   │   │   └── TenantController.php
-│   │   │   ├── 📁 Auth/
-│   │   │   │   ├── LoginController.php
-│   │   │   │   └── RegisterController.php
+│   │   │   ├── 📁 Finance/
+│   │   │   │   ├── MerchantController.php
+│   │   │   │   ├── StudentBillController.php
+│   │   │   │   └── TransactionController.php
+│   │   │   ├── 📁 Academic/
+│   │   │   │   ├── DormitoryController.php
+│   │   │   │   ├── ScheduleController.php
+│   │   │   │   └── AttendanceController.php
 │   │   │   ├── DashboardController.php
 │   │   │   ├── StudentController.php
-│   │   │   ├── ClassroomController.php
-│   │   │   ├── PermissionController.php
-│   │   │   ├── ViolationController.php
-│   │   │   ├── MemorizationController.php
-│   │   │   ├── BillController.php
-│   │   │   ├── TransactionController.php
-│   │   │   ├── WalletController.php
-│   │   │   ├── TeacherController.php
-│   │   │   └── PayrollController.php
+│   │   │   ├── ReportController.php
+│   │   │   └── WaliController.php
 │   │   ├── 📁 Middleware/
 │   │   │   ├── HandleInertiaRequests.php
-│   │   │   ├── TenantMiddleware.php
 │   │   │   └── RoleMiddleware.php
 │   │   └── Kernel.php
 │   ├── 📁 Models/

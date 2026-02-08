@@ -19,17 +19,24 @@ Transformasi Digital Terintegrasi untuk Manajemen Pesantren Modern - Sebuah plat
 
 ✅ **Completed:**
 
-- Laravel 12 + Inertia.js + Svelte setup
-- Basic AppLayout with sidebar navigation
-- Home dashboard with placeholder statistics
-- Tailwind CSS configuration
-- SQLite database (development)
+- Laravel 12 + Inertia.js + Svelte 5 setup
+- Laravel Jetstream (Fortify/Sanctum) Authentication implementation
+- Multi-tenancy via static tenant scoping and `stancl/tenancy`
+- Merchant POS (E-Wallet Eco-system) for Canteen/Koperasi
+- Dormitory & Facility Management (Room occupancy tracking)
+- Executive Analytics & Reporting (Financial health & cash flow)
+- Enhanced Student Profile (Academic, Discipline, Finance tabs)
+- Wali Santri Monitoring Portal (Digital monitoring hub)
+- Visual Classroom Schedule Management
+- PWA Support with Installation features
+- Premium Design System with Plus Jakarta Sans
 
 🔄 **In Progress:**
 
-- Multi-tenancy architecture
-- Database schema design
-- Core modules implementation
+- Native WhatsApp Gateway (Fonnte/Watzap) full integration
+- Payment Gateway (Midtrans) production setup
+- Advanced Tahfidz Tracking module refinements
+- Automatic Payroll generation logic
 
 ---
 
@@ -552,12 +559,13 @@ FOREIGN KEY(tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 - [ ] Create tenant middleware
 - [ ] Test tenant isolation
 
-#### Sprint 1.2: Authentication & Authorization
+#### Sprint 1.2: Authentication & Authorization ✅
 
-- [ ] Update `users` table with `tenant_id` and roles
-- [ ] Implement role-based middleware (admin, ustadz, wali)
-- [ ] Create login/register pages (Svelte)
-- [ ] Setup Inertia shared data (auth user, tenant info)
+- [x] Integrate Laravel Jetstream (Fortify & Sanctum)
+- [x] Update `users` table with `tenant_id` and custom roles
+- [x] Implement role-based middleware logic
+- [x] Create stunning Svelte Login & Register pages
+- [x] Setup Inertia shared data (auth user, tenant info)
 
 #### Sprint 1.3: Super Admin Panel
 

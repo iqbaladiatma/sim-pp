@@ -66,7 +66,14 @@ class StudentController extends Controller
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
 
-        Student::create($validated);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            $student = Student::create($validated);
+            \App\Models\StudentWallet::create([
+                'tenant_id' => $student->tenant_id,
+                'student_id' => $student->id,
+                'balance' => 0,
+            ]);
+        });
 
         return redirect()->route('students.index')->with('success', 'Data santri berhasil ditambahkan.');
     }
@@ -77,7 +84,30 @@ class StudentController extends Controller
     public function show(Student $student)
     {
         return Inertia::render('Students/Show', [
-            'student' => $student->load(['classroom', 'dormitoryRoom', 'parent']),
+            'student' => $student->load([
+                'classroom',
+                'dormitoryRoom',
+                'parent'
+            ]),
+            'grades' => \App\Models\Grade::with(['subject', 'exam'])
+                ->where('student_id', $student->id)
+                ->latest()
+                ->limit(10)
+                ->get(),
+            'violations' => \App\Models\Violation::where('student_id', $student->id)
+                ->latest()
+                ->get(),
+            'permissions' => \App\Models\Permission::where('student_id', $student->id)
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'bills' => \App\Models\StudentBill::with('category')
+                ->where('student_id', $student->id)
+                ->where('status', '!=', 'paid')
+                ->get(),
+            'walletTransactions' => \App\Models\WalletTransaction::whereHas('wallet', function ($q) use ($student) {
+                $q->where('student_id', $student->id);
+            })->latest()->limit(5)->get(),
         ]);
     }
 

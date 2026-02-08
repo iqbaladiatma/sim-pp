@@ -8,10 +8,17 @@ use Inertia\Inertia;
 
 class BillCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = BillCategory::query();
+
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
         return Inertia::render('Finance/Categories/Index', [
-            'categories' => BillCategory::latest()->get(),
+            'categories' => $query->latest()->paginate(10)->withQueryString(),
+            'filters' => $request->only(['search']),
         ]);
     }
 
@@ -25,12 +32,13 @@ class BillCategoryController extends Controller
         ]);
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
+
         BillCategory::create($validated);
 
-        return redirect()->back()->with('success', 'Kategori tagihan berhasil dibuat.');
+        return redirect()->back()->with('success', 'Kategori tagihan berhasil ditambahkan.');
     }
 
-    public function update(Request $request, BillCategory $category)
+    public function update(Request $request, BillCategory $billCategory)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -39,13 +47,15 @@ class BillCategoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $category->update($validated);
-        return redirect()->back()->with('success', 'Kategori tagihan diperbarui.');
+        $billCategory->update($validated);
+
+        return redirect()->back()->with('success', 'Kategori tagihan berhasil diperbarui.');
     }
 
-    public function destroy(BillCategory $category)
+    public function destroy(BillCategory $billCategory)
     {
-        $category->delete();
-        return redirect()->back()->with('success', 'Kategori tagihan dihapus.');
+        $billCategory->delete();
+
+        return redirect()->back()->with('success', 'Kategori tagihan berhasil dihapus.');
     }
 }

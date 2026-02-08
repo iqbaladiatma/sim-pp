@@ -9,11 +9,18 @@ use Inertia\Inertia;
 
 class PermissionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Permissions/Index', [
-            'permissions' => Permission::with(['student', 'approvedBy'])->latest()->paginate(10),
+        $query = Permission::with('student');
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        return Inertia::render('Academic/Permissions/Index', [
+            'permissions' => $query->latest()->paginate(10)->withQueryString(),
             'students' => Student::all(['id', 'name']),
+            'filters' => $request->only(['status']),
         ]);
     }
 
@@ -32,23 +39,32 @@ class PermissionController extends Controller
 
         Permission::create($validated);
 
-        return redirect()->back()->with('success', 'Permohonan izin diajukan.');
+        return redirect()->back()->with('success', 'Permohonan izin berhasil dibuat.');
     }
 
     public function update(Request $request, Permission $permission)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,approved,rejected,on_leave,returned',
+            'status' => 'required|in:approved,rejected,returned',
             'note' => 'nullable|string',
-            'actual_return_date' => 'nullable|date',
         ]);
 
-        if (in_array($validated['status'], ['approved', 'rejected'])) {
+        if ($validated['status'] == 'approved') {
             $validated['approved_by'] = auth()->id();
+        }
+
+        if ($validated['status'] == 'returned') {
+            $validated['actual_return_date'] = now();
         }
 
         $permission->update($validated);
 
-        return redirect()->back()->with('success', 'Status perizinan diperbarui.');
+        return redirect()->back()->with('success', 'Status izin berhasil diperbarui.');
+    }
+
+    public function destroy(Permission $permission)
+    {
+        $permission->delete();
+        return redirect()->back()->with('success', 'Data izin berhasil dihapus.');
     }
 }

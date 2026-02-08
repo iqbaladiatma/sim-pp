@@ -68,6 +68,36 @@ class StudentBillController extends Controller
         return redirect()->back()->with('success', 'Tagihan berhasil dibuat untuk ' . count($studentIds) . ' santri.');
     }
 
+    public function pay(Request $request, StudentBill $bill)
+    {
+        $wallet = $bill->student->wallet;
+
+        if (!$wallet) {
+            return redirect()->back()->with('error', 'Santri belum memiliki e-wallet.');
+        }
+
+        try {
+            $amountToPay = $bill->amount - $bill->paid_amount;
+
+            $wallet->deduct(
+                $amountToPay,
+                "Pembayaran " . $bill->category->name,
+                'student_bills',
+                $bill->id
+            );
+
+            $bill->update([
+                'paid_amount' => $bill->amount,
+                'status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            return redirect()->back()->with('success', 'Pembayaran berhasil menggunakan saldo wallet.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
     public function destroy(StudentBill $bill)
     {
         if ($bill->paid_amount > 0) {

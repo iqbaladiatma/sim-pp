@@ -1,29 +1,34 @@
-# 🚀 SIM-PP Quick Start Guide
+# 🚀 SIM-PP Management Guide
 
-## Prerequisites Checklist
+## Prerequisites Checklist ✅
 
-- [x] Laravel 12 installed
-- [x] Svelte + Inertia.js configured
-- [x] Tailwind CSS setup
-- [ ] MySQL database (switch from SQLite for production features)
-- [ ] Multi-tenancy package
-- [ ] Payment gateway accounts (Midtrans/Xendit)
-- [ ] WhatsApp gateway account (Fonnte/Watzap)
+- [x] Laravel 12 + Svelte 5 + Inertia 2
+- [x] Laravel Jetstream (Fortify/Sanctum) Auth
+- [x] MySQL Database established
+- [x] Multi-tenancy scoping implemented
+- [x] PWA Icons and Manifest generated
+- [ ] Production WhatsApp Gateway (API Token)
+- [ ] Payment Gateway (Midtrans Keys)
 
 ---
 
-## Step 1: Switch to MySQL Database
+## Technical Maintenance Commands
 
-### Update `.env` file:
+### Refresh Database & Reset Foundation
 
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=sim_pp
-DB_USERNAME=root
-DB_PASSWORD=
+```bash
+php artisan migrate:fresh --seed
 ```
+
+### Optimize for Production
+
+```bash
+composer install --optimize-autoloader --no-dev
+php artisan optimize
+npm run build
+```
+
+---
 
 ### Create database:
 

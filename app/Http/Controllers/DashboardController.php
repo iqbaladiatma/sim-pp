@@ -16,7 +16,13 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $tenantId = auth()->user()->tenant_id;
+        $user = auth()->user();
+
+        if ($user->isWaliSantri()) {
+            return (new WaliController())->index();
+        }
+
+        $tenantId = $user->tenant_id;
 
         // 1. Student Statistics
         $totalStudents = Student::count();
@@ -64,7 +70,16 @@ class DashboardController extends Controller
                     'total_paid' => $totalPaid,
                     'total_outstanding' => $totalOutstanding,
                     'collectability' => $collectability,
+                    'total_balance' => \App\Models\StudentWallet::sum('balance'),
+                    'monthly_expense' => \App\Models\Expense::whereMonth('expense_date', now()->month)->sum('amount'),
                 ],
+                'hr' => [
+                    'total_teachers' => \App\Models\Teacher::count(),
+                    'teacher_present' => \App\Models\TeacherAttendance::where('date', now()->toDateString())->where('status', 'hadir')->count(),
+                ],
+                'academic' => [
+                    'tahfidz_today' => \App\Models\Memorization::whereDate('recorded_at', now()->toDateString())->count(),
+                ]
             ],
             'recent' => [
                 'transactions' => $recentTransactions,

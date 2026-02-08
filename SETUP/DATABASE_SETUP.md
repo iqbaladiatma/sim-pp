@@ -61,11 +61,12 @@ INFO  Preparing database.
 
   Creating migration table ............................................. 12ms DONE
 
-INFO  Running migrations.
+   INFO  Running migrations.
 
-  0001_01_01_000000_create_users_table.php ............................ 45ms DONE
-  0001_01_01_000001_create_cache_table.php ............................ 23ms DONE
-  0001_01_01_000002_create_jobs_table.php ............................. 34ms DONE
+  0001_01_01_000000_create_users_table ................................. DONE
+  2026_02_08_100001_create_tenants_table ............................... DONE
+  2026_02_08_114406_add_two_factor_columns_to_users_table .............. DONE
+  2026_02_08_400001_create_finance_tables .............................. DONE
 ```
 
 ---

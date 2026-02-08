@@ -9,11 +9,18 @@ use Inertia\Inertia;
 
 class ClassroomController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Classrooms/Index', [
-            'classrooms' => Classroom::with('homeroomTeacher')->latest()->get(),
-            'teachers' => User::whereIn('role', ['ustadz', 'admin_pondok'])->get(['id', 'name']),
+        $query = Classroom::with('homeroomTeacher');
+
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        return Inertia::render('Academic/Classrooms/Index', [
+            'classrooms' => $query->latest()->paginate(10)->withQueryString(),
+            'teachers' => User::where('role', 'ustadz')->orWhere('role', 'admin_pondok')->get(['id', 'name']),
+            'filters' => $request->only(['search']),
         ]);
     }
 
@@ -21,8 +28,8 @@ class ClassroomController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'level' => 'nullable|string|max:255',
-            'academic_year' => 'nullable|string|max:255',
+            'level' => 'nullable|string|max:50',
+            'academic_year' => 'nullable|string|max:20',
             'homeroom_teacher_id' => 'nullable|exists:users,id',
             'capacity' => 'required|integer|min:1',
         ]);
@@ -38,20 +45,21 @@ class ClassroomController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'level' => 'nullable|string|max:255',
-            'academic_year' => 'nullable|string|max:255',
+            'level' => 'nullable|string|max:50',
+            'academic_year' => 'nullable|string|max:20',
             'homeroom_teacher_id' => 'nullable|exists:users,id',
             'capacity' => 'required|integer|min:1',
         ]);
 
         $classroom->update($validated);
 
-        return redirect()->back()->with('success', 'Data kelas diperbarui.');
+        return redirect()->back()->with('success', 'Data kelas berhasil diperbarui.');
     }
 
     public function destroy(Classroom $classroom)
     {
         $classroom->delete();
+
         return redirect()->back()->with('success', 'Kelas berhasil dihapus.');
     }
 }

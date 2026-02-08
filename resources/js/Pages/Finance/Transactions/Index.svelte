@@ -6,7 +6,8 @@
     CreditCard, 
     CheckCircle2, 
     ArrowUpRight,
-    Search
+    Search,
+    Printer
   } from 'lucide-svelte';
 
   export let transactions;
@@ -80,10 +81,15 @@
                   <p class="text-sm font-black text-gray-900">{formatCurrency(trx.amount)}</p>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-600">
-                    <CheckCircle2 class="h-3 w-3" />
-                    {trx.status}
-                  </span>
+                   <div class="flex items-center justify-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-600">
+                      <CheckCircle2 class="h-3 w-3" />
+                      {trx.status}
+                    </span>
+                    <button class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-100" title="Cetak Kwitansi">
+                       <Printer class="h-3.5 w-3.5" />
+                    </button>
+                   </div>
                 </td>
               </tr>
             {:else}

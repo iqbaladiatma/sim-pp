@@ -1,164 +1,325 @@
 <script>
-  import AppLayout from '../../../Layouts/AppLayout.svelte';
-  import { useForm, router } from '@inertiajs/svelte';
-  import { 
-    Plus, 
-    Edit2, 
-    Trash2,
-    BookOpen,
-    X,
-    Save,
-    Search
-  } from 'lucide-svelte';
+    import { Link, router, useForm } from "@inertiajs/svelte";
+    import AppLayout from "../../../Layouts/AppLayout.svelte";
+    import {
+        Search,
+        Plus,
+        Pencil,
+        Trash2,
+        X,
+        Save,
+        BookOpen,
+        Code as CodeIcon,
+    } from "lucide-svelte";
 
-  export let subjects;
+    export let subjects = { data: [], links: [] };
+    export let filters = { search: "" };
 
-  let isModalOpen = false;
-  let editingSubject = null;
+    let search = filters.search;
+    let isModalOpen = false;
+    let isEditing = false;
+    let editingId = null;
 
-  const form = useForm({
-    name: '',
-    code: '',
-    description: '',
-  });
+    const form = useForm({
+        name: "",
+        code: "",
+        description: "",
+    });
 
-  function openModal(subject = null) {
-    editingSubject = subject;
-    if (subject) {
-      $form.name = subject.name;
-      $form.code = subject.code || '';
-      $form.description = subject.description || '';
-    } else {
-      $form.reset();
+    function openCreateModal() {
+        isEditing = false;
+        editingId = null;
+        form.reset();
+        isModalOpen = true;
     }
-    isModalOpen = true;
-  }
 
-  function submit() {
-    if (editingSubject) {
-      $form.put(`/subjects/${editingSubject.id}`, {
-        onSuccess: () => closeModal(),
-      });
-    } else {
-      $form.post('/subjects', {
-        onSuccess: () => closeModal(),
-      });
+    function openEditModal(subject) {
+        isEditing = true;
+        editingId = subject.id;
+        form.name = subject.name;
+        form.code = subject.code;
+        form.description = subject.description || "";
+        isModalOpen = true;
     }
-  }
 
-  function closeModal() {
-    isModalOpen = false;
-    editingSubject = null;
-    $form.reset();
-  }
-
-  function deleteSubject(id) {
-    if (confirm('Hapus mata pelajaran ini?')) {
-      router.delete(`/subjects/${id}`);
+    function closeModal() {
+        isModalOpen = false;
+        form.reset();
     }
-  }
+
+    function submit() {
+        if (isEditing) {
+            form.put(route("subjects.update", editingId), {
+                onSuccess: () => closeModal(),
+            });
+        } else {
+            form.post(route("subjects.store"), {
+                onSuccess: () => closeModal(),
+            });
+        }
+    }
+
+    function deleteSubject(id) {
+        if (
+            confirm(
+                "Apakah Anda yakin ingin menghapus data mata pelajaran ini?",
+            )
+        ) {
+            router.delete(route("subjects.destroy", id));
+        }
+    }
+
+    function handleSearch() {
+        router.get(
+            route("subjects.index"),
+            { search },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    }
 </script>
 
+<svelte:head>
+    <title>Mata Pelajaran</title>
+</svelte:head>
+
 <AppLayout>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Mata Pelajaran</h1>
-        <p class="text-gray-500 text-sm">Kelola daftar kurikulum dan mata pelajaran pondok</p>
-      </div>
-      <button 
-        on:click={() => openModal()}
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-2xl shadow-lg shadow-blue-200 transition-all transform active:scale-95"
-      >
-        <Plus class="h-5 w-5" />
-        Tambah Mapel
-      </button>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each subjects as subject}
-        <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 group transition-all hover:shadow-xl hover:shadow-gray-200/50">
-          <div class="flex items-start justify-between mb-4">
-            <div class="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-              <BookOpen class="h-6 w-6" />
+    <div class="space-y-6">
+        <!-- Header Section -->
+        <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+        >
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
+                    Mata Pelajaran
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">
+                    Daftar mata pelajaran yang diajarkan
+                </p>
             </div>
-            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button on:click={() => openModal(subject)} class="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition">
-                <Edit2 class="h-4 w-4" />
-              </button>
-              <button on:click={() => deleteSubject(subject.id)} class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition">
-                <Trash2 class="h-4 w-4" />
-              </button>
+
+            <button
+                on:click={openCreateModal}
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200"
+            >
+                <Plus class="h-4 w-4" />
+                Tambah Mapel
+            </button>
+        </div>
+
+        <!-- Filters & Search -->
+        <div
+            class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-4"
+        >
+            <div class="relative flex-1">
+                <Search
+                    class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                />
+                <input
+                    type="text"
+                    bind:value={search}
+                    on:input={handleSearch}
+                    placeholder="Cari nama atau kode mapel..."
+                    class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                />
             </div>
-          </div>
-          
-          <h3 class="text-lg font-bold text-gray-900">{subject.name}</h3>
-          <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">{subject.code || 'Tanpa Kode'}</p>
-          <p class="text-sm text-gray-500 line-clamp-2">{subject.description || 'Tidak ada deskripsi.'}</p>
         </div>
-      {:else}
-        <div class="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-gray-200">
-           <p class="text-gray-400">Belum ada data mata pelajaran.</p>
+
+        <!-- Data Table -->
+        <div
+            class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+        >
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead
+                        class="text-xs text-gray-500 uppercase bg-gray-50/50 border-b border-gray-100"
+                    >
+                        <tr>
+                            <th class="px-6 py-4 font-bold">Kode</th>
+                            <th class="px-6 py-4 font-bold"
+                                >Nama Mata Pelajaran</th
+                            >
+                            <th class="px-6 py-4 font-bold">Deskripsi</th>
+                            <th class="px-6 py-4 font-bold text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {#each subjects.data as subject (subject.id)}
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td
+                                    class="px-6 py-4 font-mono text-xs font-bold text-blue-600 bg-blue-50/30"
+                                >
+                                    {subject.code}
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"
+                                        >
+                                            <BookOpen class="h-4 w-4" />
+                                        </div>
+                                        {subject.name}
+                                    </div>
+                                </td>
+                                <td
+                                    class="px-6 py-4 text-gray-600 text-xs max-w-sm truncate"
+                                >
+                                    {subject.description || "-"}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div
+                                        class="flex items-center justify-end gap-2"
+                                    >
+                                        <button
+                                            on:click={() =>
+                                                openEditModal(subject)}
+                                            class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors"
+                                        >
+                                            <Pencil class="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            on:click={() =>
+                                                deleteSubject(subject.id)}
+                                            class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-red-600 transition-colors"
+                                        >
+                                            <Trash2 class="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {:else}
+                            <tr>
+                                <td
+                                    colspan="4"
+                                    class="px-6 py-12 text-center text-gray-500"
+                                >
+                                    Belum ada data mata pelajaran.
+                                </td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div
+                class="px-6 py-4 border-t border-gray-100 flex items-center justify-between"
+            >
+                <span class="text-xs text-gray-500">
+                    Menampilkan {subjects.from || 0} - {subjects.to || 0} dari {subjects.total ||
+                        0} data
+                </span>
+                <div class="flex gap-2">
+                    {#each subjects.links as link}
+                        {#if link.url}
+                            <Link
+                                href={link.url}
+                                class="px-3 py-1 text-xs rounded-lg {link.active
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}"
+                            >
+                                {@html link.label}
+                            </Link>
+                        {:else}
+                            <span
+                                class="px-3 py-1 text-xs rounded-lg text-gray-300"
+                            >
+                                {@html link.label}
+                            </span>
+                        {/if}
+                    {/each}
+                </div>
+            </div>
         </div>
-      {/each}
     </div>
-  </div>
 
-  <!-- Modal -->
-  {#if isModalOpen}
-    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-        <div class="p-6 border-b border-gray-50 flex items-center justify-between">
-          <h2 class="text-xl font-bold text-gray-900">{editingSubject ? 'Edit Mapel' : 'Tambah Mapel Baru'}</h2>
-          <button on:click={closeModal} class="p-2 text-gray-400 hover:bg-gray-50 rounded-xl transition">
-            <X class="h-5 w-5" />
-          </button>
+    <!-- Modal Form -->
+    {#if isModalOpen}
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+        >
+            <div
+                class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200"
+            >
+                <div
+                    class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50"
+                >
+                    <h3 class="text-lg font-bold text-gray-900">
+                        {isEditing
+                            ? "Edit Mata Pelajaran"
+                            : "Tambah Mata Pelajaran"}
+                    </h3>
+                    <button
+                        on:click={closeModal}
+                        class="text-gray-400 hover:text-gray-600"
+                    >
+                        <X class="h-5 w-5" />
+                    </button>
+                </div>
+
+                <form on:submit|preventDefault={submit} class="p-6 space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                            >Kode Mapel</label
+                        >
+                        <input
+                            type="text"
+                            bind:value={$form.code}
+                            placeholder="MAT01"
+                            class="w-full rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 font-mono uppercase"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                            >Nama Mata Pelajaran</label
+                        >
+                        <input
+                            type="text"
+                            bind:value={$form.name}
+                            placeholder="Matematika"
+                            class="w-full rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                            >Deskripsi (Opsional)</label
+                        >
+                        <textarea
+                            bind:value={$form.description}
+                            rows="2"
+                            placeholder="Keterangan singkat..."
+                            class="w-full rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        ></textarea>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button
+                            type="button"
+                            on:click={closeModal}
+                            class="px-5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 font-medium transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={$form.processing}
+                            class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg shadow-blue-200 transition-colors flex items-center gap-2"
+                        >
+                            <Save class="h-4 w-4" />
+                            Simpan Data
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        
-        <form on:submit|preventDefault={submit} class="p-8 space-y-6">
-          <div class="space-y-1.5">
-            <label for="name" class="text-sm font-semibold text-gray-700">Nama Mata Pelajaran</label>
-            <input 
-              id="name"
-              type="text" 
-              bind:value={$form.name}
-              placeholder="Contoh: Bahasa Arab"
-              required
-              class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
-            />
-          </div>
-
-          <div class="space-y-1.5">
-            <label for="code" class="text-sm font-semibold text-gray-700">Kode Mapel (Opsional)</label>
-            <input 
-              id="code"
-              type="text" 
-              bind:value={$form.code}
-              placeholder="Contoh: ARB-01"
-              class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
-            />
-          </div>
-
-          <div class="space-y-1.5">
-            <label for="description" class="text-sm font-semibold text-gray-700">Deskripsi</label>
-            <textarea 
-              id="description"
-              bind:value={$form.description}
-              rows="3"
-              class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all resize-none"
-            ></textarea>
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={$form.processing}
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl shadow-xl shadow-blue-200 transition-all flex items-center justify-center gap-2"
-          >
-            <Save class="h-5 w-5" />
-            {editingSubject ? 'Update Mapel' : 'Simpan Mapel'}
-          </button>
-        </form>
-      </div>
-    </div>
-  {/if}
+    {/if}
 </AppLayout>
