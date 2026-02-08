@@ -58,13 +58,13 @@
     </div>
 
     <nav class="mt-6 px-4 space-y-1">
-      <a 
+      <Link 
         href="/dashboard" 
         class="flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all {$page.url === '/dashboard' || $page.url === '/super-admin/dashboard' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}"
       >
         <LayoutDashboard class="h-5 w-5" />
         <span>Dashboard</span>
-      </a>
+      </Link>
       
       {#if user?.is_super_admin}
         <div class="pt-4 pb-2 px-4">

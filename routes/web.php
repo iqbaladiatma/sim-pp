@@ -24,11 +24,7 @@ Route::middleware('auth')->group(function () {
         if ($user->isSuperAdmin()) {
             return redirect()->route('super-admin.dashboard');
         }
-        return Inertia::render('Home', [
-            'auth' => [
-                'user' => $user
-            ]
-        ]);
+        return app(\App\Http\Controllers\DashboardController::class)->index();
     })->name('dashboard');
 
     // Super Admin Routes
